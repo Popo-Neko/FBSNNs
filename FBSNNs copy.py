@@ -42,7 +42,8 @@ class FBSNN(): # Forward-Backward Stochastic Neural Network
         return self.model(inputs) 
     
     def optimizer(self, learning_rate):
-        return tf.keras.optimizers.legacy.Adam(learning_rate)
+        # return tf.keras.optimizers.legacy.Adam(learning_rate)
+        return tf.keras.optimizers.Adam(learning_rate)
     
     def net_u(self, t, X): # M x 1, M x D
         with tf.GradientTape() as tape:
@@ -132,7 +133,13 @@ class FBSNN(): # Forward-Backward Stochastic Neural Network
             loss_list.append(loss.numpy())
             start_time = time.time()
         plt.plot(loss_list)
-    
+        plt.show()
+
+    def predict(self, Xi_star, t_star, W_star):
+        X_star = Xi_star + W_star
+        Y_star = self.model(tf.concat([t_star, X_star], 1))
+        return X_star.numpy(), Y_star.numpy()
+
     def phi_tf(self, t, X, Y, Z): # M x 1, M x D, M x 1, M x D
         return 0.05*(Y - tf.reduce_sum(X*Z, 1, keepdims = True)) # M x 1
     
