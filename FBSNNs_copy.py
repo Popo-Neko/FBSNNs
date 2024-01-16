@@ -137,7 +137,7 @@ class FBSNN(): # Forward-Backward Stochastic Neural Network
 
     def predict(self, Xi_star, t_star, W_star):
         X_star = Xi_star + W_star
-        Y_star = self.model(tf.concat([t_star, X_star], 1))
+        Y_star = self.model(tf.concat([t_star, X_star], 2))
         return X_star.numpy(), Y_star.numpy()
 
     def phi_tf(self, t, X, Y, Z): # M x 1, M x D, M x 1, M x D
@@ -164,12 +164,39 @@ class SinActivation(Layer):
              
 if __name__ == "__main__":
     # define a model
-    M = 100 # number of trajectories (batch size)
-    N = 50 # number of time snapshots
-    D = 100 # number of dimensions
-    Xi = np.array([1.0,0.5]*int(D/2))[None,:]
+    # M = 100 # number of trajectories (batch size)
+    # N = 50 # number of time snapshots
+    # D = 100 # number of dimensions
+    # Xi = np.array([1.0,0.5]*int(D/2))[None,:]
+    # Xi = tf.convert_to_tensor(Xi, dtype=tf.float32)
+    # T =1.0
+    # layers = [100, 256, 256, 256, 256, 1]
+
+    M = 100  # number of trajectories (batch size)
+    N = 15  # number of time snapshots
+    D = 20  # number of dimensions
+    T = 0.3
+    Xi = np.zeros([1, D])
     Xi = tf.convert_to_tensor(Xi, dtype=tf.float32)
-    T =1.0
     layers = [100, 256, 256, 256, 256, 1]
+
     model = FBSNN(layers, Xi, T, M, N, D)
     model.train(N_Iter = 2*10**4, learning_rate=1e-3)
+
+    t_test, W_test = model.fetch_minibatch()
+
+    X_pred, Y_pred = model.predict(Xi, t_test, W_test)
+
+    samples = 5
+
+    Y_test_terminal = 1.0 / (2.0 + 0.4 * np.sum(X_pred[:, -1, :] ** 2, 1, keepdims=True))
+
+    plt.figure()
+    plt.plot(t_test[0, :, 0].T, Y_pred[0, :, 0].T, 'b', label='Learned $u(t,X_t)$')
+    plt.plot(t_test[1:samples, :, 0].T, Y_pred[1:samples, :, 0].T, 'b')
+    plt.plot(t_test[0:samples, -1, 0], Y_test_terminal[0:samples, 0], 'ks', label='$Y_T = u(T,X_T)$')
+    plt.plot([0], [0.30879], 'ko', label='$Y_0 = u(0,X_0)$')
+    plt.xlabel('$t$')
+    plt.ylabel('$Y_t = u(t,X_t)$')
+    plt.title('20-dimensional Allen-Cahn')
+    plt.legend()

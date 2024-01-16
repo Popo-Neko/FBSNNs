@@ -3,7 +3,7 @@
 """
 
 import numpy as np
-from FBSNNs import FBSNN
+from FBSNNs_copy import FBSNN
 import matplotlib.pyplot as plt
 
 class AllenCahn(FBSNN):
@@ -36,15 +36,15 @@ if __name__ == "__main__":
     N = 15   # number of time snapshots
     D = 20   # number of dimensions
     
-    layers   = [D+1] + 4*[256] + [1]
+    layers = [100, 256, 256, 256, 256, 1]
 
     T = 0.3
     Xi = np.zeros([1,D])
          
     # Training
-    model = AllenCahn(Xi, T,
+    model = AllenCahn(layers, Xi, T,
                       M, N, D,
-                      layers)
+                      )
         
     model.train(N_Iter = 2*10**4, learning_rate=1e-3)
     model.train(N_Iter = 3*10**4, learning_rate=1e-4)
@@ -68,3 +68,5 @@ if __name__ == "__main__":
     plt.ylabel('$Y_t = u(t,X_t)$')
     plt.title('20-dimensional Allen-Cahn')
     plt.legend()
+    
+    # savefig('./figures/AC_Apr18_15', crop = False)
