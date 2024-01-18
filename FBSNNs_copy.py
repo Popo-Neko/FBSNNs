@@ -80,7 +80,6 @@ class FBSNN(): # Forward-Backward Stochastic Neural Network
         return t, W
     
     def loss_function(self, t, W, Xi):
-        X = Xi + W
         loss = 0
         X_list = []
         Y_list = []
